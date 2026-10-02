@@ -25,8 +25,8 @@ from core.inventory_engine import RetailInventorySimulator, compare_champion_vs_
 st.set_page_config(page_title="5. Simulador ROI Retail | Holt-Winters+", page_icon="💰", layout="wide")
 apply_custom_css()
 
-store_id, sku_id, test_days, service_level = render_store_sku_selector()
-result = get_pipeline_result(store_id, sku_id, test_days, service_level)
+store_id, sku_id, test_days, service_level, dataset_name = render_store_sku_selector()
+result = get_pipeline_result(store_id, sku_id, test_days, service_level, dataset_name=dataset_name)
 
 st.markdown(
     """
@@ -47,10 +47,25 @@ st.markdown("### 🎛️ Parámetros Financieros & Operacionales del SKU")
 
 col_p1, col_p2, col_p3, col_p4 = st.columns(4)
 
+curr_step = 10.0 if dataset_name == "castano" else 0.1
+curr_unit = "CLP" if dataset_name == "castano" else "USD"
+
 with col_p1:
-    unit_cost = st.number_input("Costo Unitario ($):", min_value=0.1, max_value=500.0, value=result.unit_cost, step=0.1)
+    unit_cost = st.number_input(
+        f"Costo Unitario ({curr_unit}):",
+        min_value=0.1,
+        max_value=500000.0,
+        value=float(result.unit_cost),
+        step=curr_step,
+    )
 with col_p2:
-    retail_price = st.number_input("Precio Venta ($):", min_value=0.2, max_value=1000.0, value=result.retail_price, step=0.1)
+    retail_price = st.number_input(
+        f"Precio Venta ({curr_unit}):",
+        min_value=0.2,
+        max_value=1000000.0,
+        value=float(result.retail_price),
+        step=curr_step,
+    )
 with col_p3:
     holding_rate = st.slider("Tasa Anual de Almacenamiento / Capital (%):", min_value=10, max_value=35, value=22, step=1) / 100.0
 with col_p4:

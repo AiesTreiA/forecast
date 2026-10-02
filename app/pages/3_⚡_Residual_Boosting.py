@@ -24,8 +24,8 @@ from app.ui_utils import (
 st.set_page_config(page_title="3. Residual Boosting & SHAP | Holt-Winters+", page_icon="⚡", layout="wide")
 apply_custom_css()
 
-store_id, sku_id, test_days, service_level = render_store_sku_selector()
-result = get_pipeline_result(store_id, sku_id, test_days, service_level)
+store_id, sku_id, test_days, service_level, dataset_name = render_store_sku_selector()
+result = get_pipeline_result(store_id, sku_id, test_days, service_level, dataset_name=dataset_name)
 
 booster_res = result.booster_result
 explainer = result.explainer
@@ -152,6 +152,9 @@ labels_map = {
     "promo_cabecera_gondola": "Cabecera Góndola",
     "promo_catalogo_ofertas": "Catálogo Ofertas",
     "promo_descuento_20pct": "Desc. 20%",
+    "is_rainy_day": "Lluvia en Santiago (Efecto Once)",
+    "rain_weekend_boost": "Sinergia Lluvia+Finde",
+    "is_fiestas_patrias": "Fiestas Patrias (18 Sept)",
 }
 
 # Add top 5 non-zero contributions

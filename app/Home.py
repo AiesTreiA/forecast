@@ -32,7 +32,7 @@ st.set_page_config(
 apply_custom_css()
 
 # Sidebar Selectors
-store_id, sku_id, test_days, service_level = render_store_sku_selector()
+store_id, sku_id, test_days, service_level, dataset_name = render_store_sku_selector()
 
 # Run Pipeline
 result = get_pipeline_result(
@@ -40,6 +40,7 @@ result = get_pipeline_result(
     sku_id=sku_id,
     test_days=test_days,
     service_level=service_level,
+    dataset_name=dataset_name,
 )
 
 # Main Title & Executive Pitch Narrative
@@ -128,11 +129,15 @@ with col3:
 
 with col4:
     net_roi = result.financial_deltas["delta_net_profit_dollars"]
+    gross_roi = result.financial_deltas["delta_gross_profit_dollars"]
+    unit_label = "CLP" if dataset_name == "castano" else "USD"
+    net_val_str = f"+${net_roi:,.0f} {unit_label}" if net_roi >= 0 else f"-${abs(net_roi):,.0f} {unit_label}"
+    gross_val_str = f"+${gross_roi:,.0f}" if gross_roi >= 0 else f"-${abs(gross_roi):,.0f}"
     st.metric(
-        label="💰 Beneficio Económico Neto",
-        value=f"+${net_roi:,.2f}",
-        delta=f"+${result.financial_deltas['delta_gross_profit_dollars']:,.0f} margen bruto",
-        delta_color="normal",
+        label=f"💰 Beneficio Neto ({unit_label})",
+        value=net_val_str,
+        delta=f"{gross_val_str} margen bruto",
+        delta_color="normal" if net_roi >= 0 else "inverse",
         help="Margen bruto adicional recuperado descontando costo de capital de inventario y mermas.",
     )
 

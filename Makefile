@@ -18,7 +18,10 @@ install:
 	$(VENV)/bin/pip install -r requirements.txt
 
 data:
-	$(VENV)/bin/python -m core.data_generator
+	$(VENV)/bin/python -m core.data_generator --dataset retail
+
+castano:
+	$(VENV)/bin/python -m core.data_generator --dataset castano
 
 run:
 	@if [ -f "$(STREAMLIT)" ]; then \

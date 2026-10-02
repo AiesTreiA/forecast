@@ -26,8 +26,8 @@ from core.conformal_uq import ConformalPredictor
 st.set_page_config(page_title="4. Conformal Safety Stock | Holt-Winters+", page_icon="🛡️", layout="wide")
 apply_custom_css()
 
-store_id, sku_id, test_days, service_level = render_store_sku_selector()
-result = get_pipeline_result(store_id, sku_id, test_days, service_level)
+store_id, sku_id, test_days, service_level, dataset_name = render_store_sku_selector()
+result = get_pipeline_result(store_id, sku_id, test_days, service_level, dataset_name=dataset_name)
 conf_res = result.conformal_result
 test_df = result.test_df
 

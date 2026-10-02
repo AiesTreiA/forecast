@@ -93,6 +93,20 @@ class ResidualBooster:
             for ptype in ["catalogo_ofertas", "cabecera_gondola", "descuento_20pct", "2x1"]:
                 features[f"promo_{ptype}"] = 0
 
+        # Weather / Rain dynamics (Santiago bakery 'once' effect)
+        if "is_rainy_day" in df.columns:
+            features["is_rainy_day"] = df["is_rainy_day"].astype(int)
+            features["rain_weekend_boost"] = features["is_rainy_day"] * features["is_weekend"]
+        else:
+            features["is_rainy_day"] = 0
+            features["rain_weekend_boost"] = 0
+
+        # Chilean Fiestas Patrias (September 18-19 surge)
+        if "is_fiestas_patrias" in df.columns:
+            features["is_fiestas_patrias"] = df["is_fiestas_patrias"].astype(int)
+        else:
+            features["is_fiestas_patrias"] = 0
+
         # Promo interaction with weekend
         features["promo_weekend_boost"] = features["is_promo"] * features["is_weekend"]
         features["promo_payday_boost"] = features["is_promo"] * features["is_payday"]

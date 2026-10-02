@@ -105,6 +105,9 @@ class ForecastExplainer:
             "promo_cabecera_gondola": "Mecánica Cabecera Góndola",
             "promo_catalogo_ofertas": "Mecánica Catálogo Ofertas",
             "promo_descuento_20pct": "Mecánica Descuento Directo 20%",
+            "is_rainy_day": "Día de Lluvia en Santiago (Efecto Once)",
+            "rain_weekend_boost": "Sinergia Lluvia + Fin de Semana",
+            "is_fiestas_patrias": "Semana Fiestas Patrias (18 Septiembre)",
         }
         importance_df["feature_label"] = importance_df["feature"].map(labels_map).fillna(importance_df["feature"])
         return importance_df
