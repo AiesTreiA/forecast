@@ -74,7 +74,8 @@ with col_p4:
 margin_unit = retail_price - unit_cost
 margin_pct = (margin_unit / retail_price * 100.0) if retail_price > 0 else 0.0
 
-st.caption(f"Margen Bruto Unitario: **${margin_unit:.2f}** ({margin_pct:.1f}%) | Lead Time: **{result.lead_time_days} días** | Vida Útil: **{result.shelf_life_days} días**")
+formatted_margin = f"${margin_unit:,.0f} CLP" if dataset_name == "castano" else f"${margin_unit:,.2f} USD"
+st.caption(f"Margen Bruto Unitario: **{formatted_margin}** ({margin_pct:.1f}%) | Lead Time: **{result.lead_time_days} días** | Vida Útil: **{result.shelf_life_days} días**")
 
 # Run Dynamic Simulation with user parameters
 sim = RetailInventorySimulator(
@@ -110,6 +111,27 @@ sim_chall = sim.simulate_policy(
 
 deltas = compare_champion_vs_challenger_financials(sim_champ, sim_chall)
 
+is_clp = (dataset_name == "castano")
+curr_code = "CLP" if is_clp else "USD"
+
+def fmt_diff_money(val: float, signed: bool = True) -> str:
+    abs_v = abs(val)
+    if is_clp:
+        formatted = f"${abs_v:,.0f} CLP"
+    else:
+        formatted = f"${abs_v:,.2f} USD"
+    if signed:
+        sign = "+" if val > 0 else ("-" if val < 0 else "")
+        return f"{sign}{formatted}"
+    return formatted
+
+def fmt_diff_units(val: float, signed: bool = True) -> str:
+    abs_v = abs(val)
+    if signed:
+        sign = "+" if val > 0 else ("-" if val < 0 else "")
+        return f"{sign}{abs_v:,.0f} u"
+    return f"{abs_v:,.0f} u"
+
 # Impact Ribbon for 1 Store
 st.markdown(f"### 💵 Impacto Económico en {result.store_name} ({test_days} Días)")
 
@@ -118,21 +140,21 @@ r1, r2, r3, r4 = st.columns(4)
 with r1:
     st.metric(
         "Ventas Adicionales Recuperadas",
-        f"+{deltas['delta_sales_units']:,.0f} u",
+        fmt_diff_units(deltas['delta_sales_units']),
         f"Quiebres: {sim_chall.stockout_days} vs {sim_champ.stockout_days} días",
     )
 
 with r2:
     st.metric(
         "Margen Bruto Ganado",
-        f"+${deltas['delta_gross_profit_dollars']:,.2f}",
-        f"+${deltas['delta_revenue_dollars']:,.2f} en ventas totales",
+        fmt_diff_money(deltas['delta_gross_profit_dollars']),
+        f"{fmt_diff_money(deltas['delta_revenue_dollars'])} en ventas",
     )
 
 with r3:
     st.metric(
         "Delta Costo Almacenamiento",
-        f"${deltas['delta_holding_cost_dollars']:+,.2f}",
+        fmt_diff_money(deltas['delta_holding_cost_dollars']),
         f"Inventario prom: {sim_chall.avg_inventory_units:.0f} vs {sim_champ.avg_inventory_units:.0f} u",
         delta_color="inverse" if deltas['delta_holding_cost_dollars'] > 0 else "normal",
     )
@@ -140,7 +162,7 @@ with r3:
 with r4:
     st.metric(
         "Beneficio Económico Neto",
-        f"+${deltas['delta_net_profit_dollars']:,.2f}",
+        fmt_diff_money(deltas['delta_net_profit_dollars']),
         f"Fill Rate: {sim_chall.fill_rate_pct:.1f}% vs {sim_champ.fill_rate_pct:.1f}%",
         delta_color="normal",
     )
@@ -207,19 +229,20 @@ chain_lost_sales_recovered = deltas["delta_sales_units"] * annual_factor * n_sto
 col_c1, col_c2 = st.columns([1, 1])
 
 with col_c1:
+    portfolio_estimate = fmt_diff_money(chain_annual_net * 30, signed=False)
     st.markdown(
         f"""
         <div class="metric-card" style="border-left: 4px solid #38bdf8;">
             <h3 style="color:#38bdf8; margin-top:0;">Impacto Anualizado Proyectado en la Cadena</h3>
             <p style="font-size:1.1rem; color:#f8fafc; font-weight:600; margin-bottom:8px;">
-                Beneficio Neto Adicional: <span style="color:#10b981; font-size:1.4rem;">+${chain_annual_net:,.2f} USD</span> / año
+                Beneficio Neto Adicional: <span style="color:#10b981; font-size:1.4rem;">{fmt_diff_money(chain_annual_net)}</span> / año
             </p>
             <p style="font-size:0.95rem; color:#cbd5e1; margin-bottom:4px;">
-                • Unidades de venta recuperadas: <strong>+{chain_lost_sales_recovered:,.0f} u</strong> / año para este SKU.
+                • Unidades de venta recuperadas: <strong>{fmt_diff_units(chain_lost_sales_recovered)}</strong> / año para este SKU.
             </p>
             <p style="font-size:0.95rem; color:#cbd5e1; margin-bottom:4px;">
                 • Si se implementa sobre un portafolio de <strong>50 SKUs de alta rotación</strong>, el valor creado supera los 
-                <strong style="color:#38bdf8;">${chain_annual_net * 30:,.0f} USD anuales</strong>.
+                <strong style="color:#38bdf8;">{portfolio_estimate} anuales</strong>.
             </p>
         </div>
         """,
@@ -230,26 +253,27 @@ with col_c2:
     # Breakdown Bar Chart
     waterfall_df = pd.DataFrame({
         "Concepto": ["Margen Ventas Recuperadas", "Costo Almacenamiento", "Beneficio Neto"],
-        "Monto ($)": [
+        "Monto": [
             deltas["delta_gross_profit_dollars"] * annual_factor * n_stores_chain,
             -deltas["delta_holding_cost_dollars"] * annual_factor * n_stores_chain,
             chain_annual_net,
         ],
     })
     
+    text_labels = [fmt_diff_money(v) for v in waterfall_df["Monto"]]
     fig_wf = go.Figure(
         go.Bar(
             x=waterfall_df["Concepto"],
-            y=waterfall_df["Monto ($)"],
+            y=waterfall_df["Monto"],
             marker_color=["#10b981", "#ef4444", "#38bdf8"],
-            text=[f"${v:+,.0f}" for v in waterfall_df["Monto ($)"]],
+            text=text_labels,
             textposition="auto",
         )
     )
     fig_wf.update_layout(
         **PLOTLY_LAYOUT_DEFAULTS,
         title=dict(text=f"Desglose Financiero Anual ({n_stores_chain} Tiendas)", x=0.01),
-        yaxis_title="Dólares ($)",
+        yaxis_title=f"Monto ({curr_code})",
         height=260,
     )
     st.plotly_chart(fig_wf, use_container_width=True)

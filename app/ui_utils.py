@@ -145,20 +145,26 @@ def render_store_sku_selector():
     
     store_options = {s["store_id"]: f"{s['store_name']}" for s in active_stores}
     selected_store_id = st.sidebar.selectbox(
-        "Canal / Tienda:",
+        "Sucursal / Tienda:",
         options=list(store_options.keys()),
         format_func=lambda x: store_options[x],
         index=0,
+        key=f"store_{dataset_name}",
     )
 
     sku_keys = list(active_catalog.keys())
     sku_options = {sid: f"{cfg.sku_name} [{cfg.category}]" for sid, cfg in active_catalog.items()}
-    default_sku_idx = sku_keys.index("CAS-401") if "CAS-401" in sku_keys else 0
+    if is_castano:
+        default_sku_idx = sku_keys.index("CAS-401") if "CAS-401" in sku_keys else 0
+    else:
+        default_sku_idx = sku_keys.index("SKU-101") if "SKU-101" in sku_keys else 0
+
     selected_sku_id = st.sidebar.selectbox(
         "Producto (SKU):",
         options=sku_keys,
         format_func=lambda x: sku_options[x],
         index=default_sku_idx,
+        key=f"sku_{dataset_name}",
     )
 
     test_days = st.sidebar.slider("Horizonte de Evaluación (Días Test):", min_value=30, max_value=90, value=60, step=15)

@@ -199,15 +199,15 @@ CASTANO_CATALOG: Dict[str, SKUConfig] = {
 
 CASTANO_STORES = [
     {
-        "store_id": "CANAL-SUPER",
-        "store_name": "Jumbo Kennedy (Canal Supermercados)",
-        "scale": 1.75,
-        "type": "supermercado",
+        "store_id": "CAS-TOBALABA",
+        "store_name": "Tienda Castaño - Metro Tobalaba",
+        "scale": 1.40,
+        "type": "tienda_propia",
     },
     {
-        "store_id": "LOCAL-METRO",
-        "store_name": "Tienda Castaño Metro Tobalaba (Canal Tienda Propia)",
-        "scale": 1.25,
+        "store_id": "CAS-PROVIDENCIA",
+        "store_name": "Tienda Castaño - Av. Providencia",
+        "scale": 1.15,
         "type": "tienda_propia",
     },
 ]
