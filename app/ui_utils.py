@@ -152,6 +152,7 @@ def render_store_sku_selector():
     )
 
     sku_keys = list(active_catalog.keys())
+    sku_options = {sid: f"{cfg.sku_name} [{cfg.category}]" for sid, cfg in active_catalog.items()}
     default_sku_idx = sku_keys.index("CAS-401") if "CAS-401" in sku_keys else 0
     selected_sku_id = st.sidebar.selectbox(
         "Producto (SKU):",
